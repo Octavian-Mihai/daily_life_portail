@@ -59,6 +59,8 @@ function openForm({ title, fields, submitLabel = 'Save', onSubmit, onDelete }) {
         const [val, label] = Array.isArray(o) ? o : [o, o];
         return h('option', { value: val, selected: String(val) === String(f.value) }, label);
       }));
+    } else if (f.type === 'textarea') {
+      input = h('textarea', { rows: 4, placeholder: f.placeholder }, f.value ?? '');
     } else {
       input = h('input', {
         type: f.type || 'text',
@@ -89,8 +91,19 @@ function openForm({ title, fields, submitLabel = 'Save', onSubmit, onDelete }) {
   modal.replaceChildren(form);
   modal.classList.remove('hidden');
   modal.onclick = (e) => { if (e.target === modal) close(); };
-  const first = form.querySelector('input,select');
+  const first = form.querySelector('input,select,textarea');
   if (first) first.focus();
+}
+
+function openNotice(title, lines) {
+  const modal = document.getElementById('modal');
+  const close = () => modal.classList.add('hidden');
+  modal.replaceChildren(h('div', { class: 'card modal-card' },
+    h('h3', {}, title),
+    lines.map((l) => h('p', { class: 'notice' }, l)),
+    h('div', { class: 'row-end' }, h('span', { class: 'grow' }, ''), h('button', { class: 'btn primary', onclick: close }, 'OK'))));
+  modal.classList.remove('hidden');
+  modal.onclick = (e) => { if (e.target === modal) close(); };
 }
 
 function emptyNote(text) {

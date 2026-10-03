@@ -24,6 +24,12 @@ function draw() {
 
 rerender = draw;
 
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (file) Homework.importFile(file);
+});
+
 (async () => {
   await Store.init();
   draw();

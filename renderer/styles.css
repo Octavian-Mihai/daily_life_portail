@@ -171,4 +171,7 @@ h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: v
 .field input, .field select {
   border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 8px 10px; outline: none;
 }
-.field input:focus, .field select:focus { border-color: var(--terracotta); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--terracotta); }
+.field textarea { border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 8px 10px; outline: none; resize: vertical; }
+.notice { margin: 4px 0; }
+.notes { white-space: pre-line; font-size: 13px; color: var(--ink-soft); margin-top: 2px; }

@@ -8,7 +8,7 @@ const Today = {
     const t = todayStr();
     const habits = Habits.active().filter((x) => Habits.scheduled(x, t));
     const habitsDone = habits.filter((x) => Habits.done(x, t)).length;
-    const hw = Store.data.homework.filter((x) => !x.done && x.due <= t).sort((a, b) => a.due.localeCompare(b.due));
+    const hw = Store.data.homework.filter((x) => !x.done && x.due && x.due <= t).sort((a, b) => a.due.localeCompare(b.due));
     const upcoming = Store.data.homework.filter((x) => !x.done && x.due > t && x.due <= addDays(t, 7)).sort((a, b) => a.due.localeCompare(b.due));
     const evs = Calendar.eventsOn(t);
 

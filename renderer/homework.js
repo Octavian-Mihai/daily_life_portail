@@ -2,6 +2,24 @@ const Homework = {
   filter: { status: 'open', subject: 'all' },
   PRIORITY: { 1: 'High', 2: 'Medium', 3: 'Low' },
 
+  // Imports a Pomodoro Logger JSON export; tasks already imported (same source card id) are skipped.
+  async importFile(file) {
+    try {
+      const tasks = PomodoroImport.parse(JSON.parse(await file.text()));
+      const known = new Set(Store.data.homework.map((x) => x.sourceId).filter(Boolean));
+      const fresh = tasks.filter((t) => !known.has(t.sourceId));
+      for (const t of fresh) Store.data.homework.push({ id: Store.id(), ...t });
+      const subjects = new Set(fresh.map((t) => t.subject).filter(Boolean));
+      commit();
+      openNotice('Import complete', [
+        `Added ${fresh.length} assignment${fresh.length === 1 ? '' : 's'}` + (subjects.size ? ` from ${[...subjects].join(', ')}.` : '.'),
+        tasks.length > fresh.length ? `Skipped ${tasks.length - fresh.length} already imported.` : null,
+      ].filter(Boolean));
+    } catch (e) {
+      openNotice('Import failed', [e instanceof SyntaxError ? 'That file is not valid JSON.' : e.message]);
+    }
+  },
+
   edit(task) {
     const isNew = !task;
     openForm({
@@ -9,11 +27,12 @@ const Homework = {
       fields: [
         { name: 'title', label: 'Title', value: task?.title, required: true },
         { name: 'subject', label: 'Subject', value: task?.subject, placeholder: 'e.g. Math' },
-        { name: 'due', label: 'Due date', type: 'date', value: task?.due || todayStr(), required: true },
+        { name: 'due', label: 'Due date', type: 'date', value: isNew ? todayStr() : task.due },
         { name: 'priority', label: 'Priority', type: 'select', value: task?.priority || 2, options: [[1, 'High'], [2, 'Medium'], [3, 'Low']] },
+        { name: 'notes', label: 'Notes / checklist', type: 'textarea', value: task?.notes, placeholder: '[ ] first step\n[x] finished step' },
       ],
       onSubmit: (v) => {
-        const rec = { title: v.title.trim(), subject: v.subject.trim(), due: v.due, priority: Number(v.priority) };
+        const rec = { title: v.title.trim(), subject: v.subject.trim(), due: v.due, priority: Number(v.priority), notes: v.notes.trim() };
         if (isNew) Store.data.homework.push({ id: Store.id(), done: false, ...rec });
         else Object.assign(task, rec);
         commit();
@@ -26,8 +45,14 @@ const Homework = {
     });
   },
 
+  checklist(notes) {
+    const lines = (notes || '').split('\n').filter((l) => /^\s*\[[ xX]?\]/.test(l));
+    return { total: lines.length, done: lines.filter((l) => /^\s*\[[xX]\]/.test(l)).length };
+  },
+
   row(task) {
-    const overdue = !task.done && task.due < todayStr();
+    const overdue = !task.done && task.due && task.due < todayStr();
+    const cl = this.checklist(task.notes);
     return h('div', { class: 'row-item' + (task.done ? ' done' : '') },
       h('button', {
         class: 'check' + (task.done ? ' on' : ''),
@@ -37,7 +62,8 @@ const Homework = {
         h('div', { class: 'title' }, task.title),
         h('div', { class: 'meta' },
           task.subject && h('span', { class: 'tag' }, task.subject), ' ',
-          h('span', { class: overdue ? 'overdue' : '' }, (overdue ? 'Overdue · ' : 'Due ') + prettyDate(task.due)))),
+          h('span', { class: overdue ? 'overdue' : '' }, !task.due ? 'No due date' : (overdue ? 'Overdue · ' : 'Due ') + prettyDate(task.due)),
+          cl.total ? ` · ${cl.done}/${cl.total} done` : '')),
       h('span', { class: 'prio p' + task.priority }, this.PRIORITY[task.priority]));
   },
 
@@ -50,7 +76,7 @@ const Homework = {
       if (this.filter.status === 'done' && !x.done) return false;
       return this.filter.subject === 'all' || x.subject === this.filter.subject;
     });
-    list.sort((a, b) => a.due.localeCompare(b.due) || a.priority - b.priority);
+    list.sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999') || a.priority - b.priority);
 
     const sel = (value, opts, key) => h('select', {
       class: 'inline-select',
@@ -61,6 +87,7 @@ const Homework = {
       pageHeader('Homework', 'What\'s due, and when.', [
         sel(this.filter.status, [['open', 'Open'], ['done', 'Done'], ['all', 'All']], 'status'),
         sel(this.filter.subject, [['all', 'All subjects'], ...subjects.map((s) => [s, s])], 'subject'),
+        h('button', { class: 'btn ghost', onclick: () => document.getElementById('importFile').click() }, 'Import…'),
         h('button', { class: 'btn primary', onclick: () => this.edit() }, '+ New assignment'),
       ]),
       list.length === 0 ? emptyNote('Nothing here. Enjoy the free time.') :

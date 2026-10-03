@@ -16,7 +16,13 @@ A personal daily-tracking app for macOS: habits, homework, calendar and reading,
 
 Download the latest `.dmg` from the [Releases](https://github.com/Octavian-Mihai/daily_life_portail/releases) page, open it, and drag **Daily Portail** to Applications.
 
-The builds are **Apple Silicon (arm64) only** and **unsigned**, so on first launch right-click the app and choose **Open**.
+The builds are **Apple Silicon (arm64) only** and ad-hoc signed (not notarized by Apple), so on first launch right-click the app and choose **Open**.
+
+If macOS says the app is "damaged and can't be opened", you have a build from before v1.1.1 that was missing a valid signature. Download the latest release, or clear the download flag:
+
+```bash
+xattr -cr "/Applications/Daily Portail.app"
+```
 
 ## Importing from Pomodoro Logger
 

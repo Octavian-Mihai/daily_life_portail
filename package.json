@@ -1,6 +1,6 @@
 {
   "name": "daily-portail",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Daily tracking portail: habits, homework, calendar, reading",
   "main": "main.js",
   "author": "Daily Portail",
@@ -17,6 +17,7 @@
     "appId": "com.local.dailyportail",
     "productName": "Daily Portail",
     "files": ["main.js", "preload.js", "renderer/**/*"],
+    "afterPack": "build/after-pack.js",
     "mac": {
       "icon": "build/icon.icns",
       "category": "public.app-category.productivity",

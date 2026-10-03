@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Portail</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="drag"></div>
+      <h1 class="brand">Daily<br /><em>Portail</em></h1>
+      <nav id="nav"></nav>
+      <div class="sidebar-foot" id="sideDate"></div>
+    </aside>
+    <main id="view" class="view"></main>
+  </div>
+  <div id="modal" class="modal hidden"></div>
+
+  <script src="store.js"></script>
+  <script src="ui.js"></script>
+  <script src="today.js"></script>
+  <script src="habits.js"></script>
+  <script src="homework.js"></script>
+  <script src="calendar.js"></script>
+  <script src="reading.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

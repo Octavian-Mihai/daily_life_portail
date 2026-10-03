@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8f0dc"/>
+      <stop offset="1" stop-color="#eadcb9"/>
+    </linearGradient>
+    <clipPath id="shape"><rect x="100" y="100" width="824" height="824" rx="185"/></clipPath>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#3b2f24" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <!-- macOS icon grid: 824px squircle centered in 1024 -->
+  <g filter="url(#sh)">
+    <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  </g>
+  <!-- ruled lines -->
+  <g stroke="#b99f6a" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round">
+    <line x1="220" y1="660" x2="804" y2="660"/>
+    <line x1="220" y1="744" x2="804" y2="744"/>
+    <line x1="220" y1="828" x2="640" y2="828"/>
+  </g>
+  <!-- margin line -->
+  <line x1="190" y1="140" x2="190" y2="884" stroke="#c0623f" stroke-opacity="0.35" stroke-width="5"/>
+  <!-- check circle -->
+  <circle cx="512" cy="420" r="206" fill="#6f8f6a"/>
+  <path d="M410 424 L488 504 L626 342" fill="none" stroke="#fbf6e9" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- bookmark ribbon -->
+  <path d="M690 100 H790 V310 L740 266 L690 310 Z" fill="#c0623f" clip-path="url(#shape)"/>
+</svg>

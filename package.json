@@ -1,0 +1,30 @@
+{
+  "name": "daily-portail",
+  "version": "1.0.0",
+  "description": "Daily tracking portail: habits, homework, calendar, reading",
+  "main": "main.js",
+  "author": "Daily Portail",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac dmg"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.local.dailyportail",
+    "productName": "Daily Portail",
+    "files": ["main.js", "preload.js", "renderer/**/*"],
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity",
+      "target": ["dmg"],
+      "identity": null
+    },
+    "dmg": {
+      "title": "Daily Portail"
+    }
+  }
+}

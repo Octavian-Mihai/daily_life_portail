@@ -2,6 +2,16 @@
 
 A personal daily-tracking app for macOS: habits, homework, calendar and reading, with a warm paper/journal look. Everything is stored locally on your Mac.
 
+<p align="center">
+  <img src="docs/screenshots/today.png" width="420" alt="Today">
+  <img src="docs/screenshots/habits.png" width="420" alt="Habits">
+</p>
+<p align="center">
+  <img src="docs/screenshots/homework.png" width="420" alt="Homework">
+</p>
+
+*Screenshots use sample data.*
+
 ## Features
 
 - **Today** – one-screen dashboard: today's habits, homework due and overdue (plus the next 7 days), today's events, and reading progress.
@@ -80,3 +90,59 @@ npx electron build/make-icon.js && sh build/make-icon.sh
 ## License
 
 MIT
+
+## Architecture
+
+A small Electron app with no build step. The main process does one job, atomic reads and writes of a single JSON file; the
+renderer is plain HTML/CSS/JS with one module per tab, all sharing one in-memory `Store`.
+
+```mermaid
+flowchart LR
+    subgraph Main["Main process — main.js"]
+        IPC["ipcMain<br/>store:load · store:save"]
+        File[("portail-data.json<br/>userData folder")]
+        IPC <-->|"write .tmp, then rename"| File
+    end
+    Pre["preload.js<br/>contextBridge: portailStore"]
+    subgraph Renderer["Renderer — plain JS, no bundler"]
+        App["app.js<br/>tab router · midnight refresh"]
+        Store["store.js<br/>Store.data · debounced save"]
+        Tabs["today · habits · homework<br/>calendar · reading"]
+        UI["ui.js<br/>h() builder · date helpers · modals"]
+        Imp["import.js<br/>Pomodoro Logger parser"]
+        App --> Tabs
+        Tabs --> Store
+        Tabs --> UI
+        Tabs --> Imp
+    end
+    Store -->|"window.portailStore"| Pre
+    Pre -->|invoke| IPC
+    Store -.->|"fallback in a plain browser"| LS[(localStorage)]
+```
+
+| Path | Purpose |
+|---|---|
+| `main.js` | Electron main process: window creation and the two IPC handlers that load and save the JSON file |
+| `preload.js` | Exposes `portailStore.load/save` to the renderer through `contextBridge` (context isolation on, node integration off) |
+| `renderer/index.html`, `styles.css` | Page shell and the paper/journal theme (light and dark) |
+| `renderer/app.js` | Tab list, `draw()` re-render loop, midnight rollover |
+| `renderer/store.js` | Default state, load/save, 150 ms debounced persistence, id generator |
+| `renderer/ui.js` | `h()` DOM helper, date helpers, modal forms |
+| `renderer/today.js`, `habits.js`, `homework.js`, `calendar.js`, `reading.js` | One module per tab; each exposes `render()` |
+| `renderer/import.js` | Parses a Pomodoro Logger export into homework items (also runs under node for tests) |
+| `build/` | Icon sources and generation scripts, and the ad-hoc signing hook (`after-pack.js`) |
+| `dist/` | electron-builder output (`.dmg`, update manifest) |
+
+## Design patterns
+
+- **Single state object, render from scratch.** All data lives in `Store.data`; any change calls `Store.save()` then the global
+  `rerender()`, which rebuilds the active tab. There is no per-widget state to get out of sync.
+- **Module-per-feature with a common `render()` contract.** `app.js` holds a table of `[id, label, module]` and swaps the view,
+  so adding a tab is one entry plus one file.
+- **Narrow bridge between processes.** The renderer can only call `load` and `save`; it never touches the filesystem.
+- **Atomic, debounced persistence.** Saves coalesce for 150 ms, are flushed on `beforeunload`, and the main process writes a
+  temp file and renames it so a crash cannot leave half a file.
+- **Graceful fallback.** The same `Store` uses `localStorage` when no Electron bridge exists, so the renderer also runs in a
+  browser.
+- **Tolerant loading.** Saved data is merged over fresh defaults, so older files gain new fields instead of breaking.
+- **Idempotent import.** Re-importing skips cards already imported and never overwrites edited or completed tasks.
